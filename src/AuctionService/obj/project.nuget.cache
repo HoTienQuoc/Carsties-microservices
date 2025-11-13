@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "dgSpecHash": "IfD0QzLtRY4=",
+  "success": true,
+  "projectFilePath": "/Users/gokuquoc/Carsties/src/AuctionService/AuctionService.csproj",
+  "expectedPackageFiles": [
+    "/Users/gokuquoc/.nuget/packages/microsoft.aspnetcore.openapi/10.0.0/microsoft.aspnetcore.openapi.10.0.0.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/microsoft.entityframeworkcore/10.0.0-rc.2.25502.107/microsoft.entityframeworkcore.10.0.0-rc.2.25502.107.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/microsoft.entityframeworkcore.abstractions/10.0.0-rc.2.25502.107/microsoft.entityframeworkcore.abstractions.10.0.0-rc.2.25502.107.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/microsoft.entityframeworkcore.analyzers/10.0.0-rc.2.25502.107/microsoft.entityframeworkcore.analyzers.10.0.0-rc.2.25502.107.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/microsoft.entityframeworkcore.relational/10.0.0-rc.2.25502.107/microsoft.entityframeworkcore.relational.10.0.0-rc.2.25502.107.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/microsoft.openapi/2.0.0/microsoft.openapi.2.0.0.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/npgsql/10.0.0-rc.1/npgsql.10.0.0-rc.1.nupkg.sha512",
+    "/Users/gokuquoc/.nuget/packages/npgsql.entityframeworkcore.postgresql/10.0.0-rc.2/npgsql.entityframeworkcore.postgresql.10.0.0-rc.2.nupkg.sha512"
+  ],
+  "logs": []
+}
