@@ -11,6 +11,6 @@ public class AuctionDbContext : DbContext
 
     }
 
-    public DbSet<Auction> Blogs { get; set; }
+    public DbSet<Auction> Auctions { get; set; }
 
 }

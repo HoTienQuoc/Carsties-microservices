@@ -1,13 +1,11 @@
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Http.Features;
 
-namespace AuctionService.Entities;
+namespace AuctionService.DTOs;
 
-public class Auction
+public class AuctionDto
 {
     public Guid Id { get; set; }
-    public int ReservePrice { get; set; } = 0;
+    public int ReservePrice { get; set; }
     public required string Seller { get; set; }
     public string? Winner { get; set; }
     public int? SoldAmount { get; set; }
@@ -15,8 +13,13 @@ public class Auction
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public DateTime AuctionEnd { get; set; }
-    public Status Status { get; set; }
-    public Item Item { get; set; } = null!;
+    public required String Status { get; set; }
+    public required String Make { get; set; }
+    public required string Model { get; set; }
+    public int Year { get; set; }
+    public required string Color { get; set; }
+    public int Mileage { get; set; }
+    public required string ImageUrl { get; set; }
 
     public bool HasReservePrice() => ReservePrice > 0;
 }
