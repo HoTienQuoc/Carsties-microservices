@@ -1,0 +1,1 @@
+Sau khi tạo project api mới thì phải dotnet sln add tên project (vị trí project đó)
