@@ -6,7 +6,7 @@ namespace SearchService.Models;
 public class Item
 {
     [BsonId] // Khai báo field này là primary key
-    public Guid Id { get; set; }  // JSON của bạn phải có trường Id (GUID)
+    public string Id { get; set; } = null!; // string thay vì Guid
 
     public int ReservePrice { get; set; }
     public required string Seller { get; set; }
