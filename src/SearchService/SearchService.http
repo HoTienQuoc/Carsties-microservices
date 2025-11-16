@@ -1,6 +1,8 @@
-@SearchService_HostAddress = http://localhost:5223
+@SearchService_HostAddress = http://localhost:7002
 
 GET {{SearchService_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{SearchService_HostAddress}}/api/search

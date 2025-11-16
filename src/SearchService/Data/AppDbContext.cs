@@ -7,13 +7,14 @@ namespace SearchService.Data;
 
 public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options)
+
+    public DbSet<Item> Items { get; set; }
+
+    public AppDbContext(DbContextOptions options)
         : base(options)
     {
         this.Database.AutoTransactionBehavior = AutoTransactionBehavior.Never;
     }
-
-    public DbSet<Item> Items { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
