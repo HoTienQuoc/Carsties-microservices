@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using SearchService.Data;
 using SearchService.Models;
 using System.Text.Json;
+using SearchService.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,7 @@ var connectionString = builder.Configuration.GetConnectionString("MongoDb");
 
 // Đăng ký MongoClient để DI có thể inject vào controller
 builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(connectionString));
+builder.Services.AddHttpClient<AuctionSvcHttpClient>();
 
 var databaseName = builder.Configuration["DatabaseName"];
 
@@ -37,45 +39,45 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 
 
-// Đọc file JSON
-string filePath = "Data/auctions.json";
-if (!File.Exists(filePath))
-{
-    throw new FileNotFoundException($"Không tìm thấy file JSON: {filePath}");
-}
+// // Đọc file JSON
+// string filePath = "Data/auctions.json";
+// if (!File.Exists(filePath))
+// {
+//     throw new FileNotFoundException($"Không tìm thấy file JSON: {filePath}");
+// }
 
-string jsonString = File.ReadAllText(filePath);
-var options = new JsonSerializerOptions
-{
-    PropertyNameCaseInsensitive = true
-};
+// string jsonString = File.ReadAllText(filePath);
+// var options = new JsonSerializerOptions
+// {
+//     PropertyNameCaseInsensitive = true
+// };
 
-// Deserialize JSON thành danh sách Item
-List<Item> items = JsonSerializer.Deserialize<List<Item>>(jsonString, options)!;
+// // Deserialize JSON thành danh sách Item
+// List<Item> items = JsonSerializer.Deserialize<List<Item>>(jsonString, options)!;
 
-// Hiển thị dữ liệu trên console (tuỳ chọn)
-foreach (var item in items)
-{
-    Console.WriteLine($"{item.Make} {item.Model}, Seller: {item.Seller}, Status: {item.Status}");
-}
+// // Hiển thị dữ liệu trên console (tuỳ chọn)
+// foreach (var item in items)
+// {
+//     Console.WriteLine($"{item.Make} {item.Model}, Seller: {item.Seller}, Status: {item.Status}");
+// }
 
-// Insert dữ liệu vào MongoDB
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// // Insert dữ liệu vào MongoDB
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    // Kiểm tra nếu chưa có dữ liệu, tránh duplicate
-    if (!dbContext.Items.Any())
-    {
-        dbContext.Items.AddRange(items);
-        dbContext.SaveChanges();
-        Console.WriteLine($"Đã thêm {items.Count} item vào MongoDB thành công!");
-    }
-    else
-    {
-        Console.WriteLine("Dữ liệu đã tồn tại, không insert nữa.");
-    }
-}
+//     // Kiểm tra nếu chưa có dữ liệu, tránh duplicate
+//     if (!dbContext.Items.Any())
+//     {
+//         dbContext.Items.AddRange(items);
+//         dbContext.SaveChanges();
+//         Console.WriteLine($"Đã thêm {items.Count} item vào MongoDB thành công!");
+//     }
+//     else
+//     {
+//         Console.WriteLine("Dữ liệu đã tồn tại, không insert nữa.");
+//     }
+// }
 
 
 // Configure the HTTP request pipeline.

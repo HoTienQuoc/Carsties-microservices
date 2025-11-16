@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SearchService.Data;
 using SearchService.Models;
-using Microsoft.EntityFrameworkCore;  // <--- bắt buộc
-
+using SearchService.RequestHelpers;
 
 namespace SearchService.Controllers;
 
@@ -10,57 +10,77 @@ namespace SearchService.Controllers;
 [Route("api/search")]
 public class SearchController : ControllerBase
 {
+    private readonly AppDbContext _db;
 
-    private readonly AppDbContext _dbContext;
-
-    public SearchController(AppDbContext dbContext)
+    public SearchController(AppDbContext db)
     {
-        _dbContext = dbContext;
+        _db = db;
     }
 
     [HttpGet]
-    public async Task<ActionResult> SearchItems(
-    [FromQuery] string? searchTerm,
-    [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 4)
+    public async Task<ActionResult> SearchItems([FromQuery] SearchParams searchParams)
     {
-        if (pageNumber < 1) pageNumber = 1;
-        if (pageSize < 1) pageSize = 4;
+        IQueryable<Item> query = _db.Items.AsQueryable();
 
-        // Bắt đầu query
-        IQueryable<Item> query = _dbContext.Items.AsQueryable();
-
-        // Filter theo searchTerm nếu có
-        if (!string.IsNullOrEmpty(searchTerm))
+        if (!string.IsNullOrEmpty(searchParams.SearchTerm))
         {
+            var term = searchParams.SearchTerm.ToLower();
+
             query = query.Where(i =>
-                i.Make.ToLower().Contains(searchTerm.ToLower()) ||
-                i.Model.ToLower().Contains(searchTerm.ToLower())
-            );
+                i.Make.ToLower().Contains(term) ||
+                i.Model.ToLower().Contains(term));
         }
 
-        // Lấy tổng số bản ghi trước khi phân trang
+        query = searchParams.FilterBy?.ToLower() switch
+        {
+            "finished" =>
+                query.Where(i => i.AuctionEnd < DateTime.UtcNow),
+
+            "endingsoon" =>
+                query.Where(i =>
+                    i.AuctionEnd > DateTime.UtcNow &&
+                    i.AuctionEnd < DateTime.UtcNow.AddHours(6)),
+
+            _ =>
+                query.Where(i => i.AuctionEnd > DateTime.UtcNow)
+        };
+
+        if (!string.IsNullOrEmpty(searchParams.Seller))
+            query = query.Where(i => i.Seller == searchParams.Seller);
+
+        if (!string.IsNullOrEmpty(searchParams.Winner))
+            query = query.Where(i => i.Winner == searchParams.Winner);
+
+        query = searchParams.OrderBy?.ToLower() switch
+        {
+            "make" =>
+                query.OrderBy(i => i.Make).ThenBy(i => i.Model),
+
+            "new" =>
+                query.OrderByDescending(i => i.CreatedAt),
+
+            _ =>
+                query.OrderBy(i => i.AuctionEnd)
+        };
+
         var totalCount = await query.CountAsync();
 
-        // Tính tổng số trang
-        var pageCount = (int)Math.Ceiling(totalCount / (double)pageSize);
+        var pageCount = (int)Math.Ceiling(
+            totalCount / (double)searchParams.PageSize
+        );
 
-        // Sắp xếp và phân trang
         var results = await query
-            .OrderBy(i => i.Make)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((searchParams.PageNumber - 1) * searchParams.PageSize)
+            .Take(searchParams.PageSize)
             .ToListAsync();
 
-        // Trả về JSON
         return Ok(new
         {
             results,
             pageCount,
-            totalCount
+            totalCount,
+            pageNumber = searchParams.PageNumber,
+            pageSize = searchParams.PageSize
         });
     }
-
-
-
 }

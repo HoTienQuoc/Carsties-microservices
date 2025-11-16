@@ -3,6 +3,7 @@ using AuctionService.Data;
 using AuctionService.DTOs;
 using AuctionService.Entities;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,18 +23,24 @@ public class AuctionController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions()
+    public async Task<ActionResult<List<AuctionDto>>> GetAllAuctions(string date)
     {
+        var query = _context.Auctions.OrderBy(x => x.Item.Make).AsQueryable();
+        if (!string.IsNullOrEmpty(date))
+        {
+            query = query.Where(x => x.UpdatedAt.CompareTo(DateTime.Parse(date).ToUniversalTime()) > 0);
+        }
+        return await query.ProjectTo<AuctionDto>(_mapper.ConfigurationProvider).ToListAsync();
         //_context là DbContext, đối tượng quản lý kết nối và thao tác với cơ sở dữ liệu.
         //Auctions là DbSet trong DbContext, đại diện cho bảng Auctions trong database.
         //Nghĩa là: mình đang truy xuất tất cả các bản ghi trong bảng Auctions.
         //Include: EF Core sẽ tạo SQL JOIN giữa Auctions và Items.
-        var auctions = await _context.Auctions
-            .Include(x => x.Item)
-            .OrderBy(x => x.Item.Make)
-            .ToListAsync();
-        var auctionDtos = _mapper.Map<List<AuctionDto>>(auctions);
-        return auctionDtos;
+        // var auctions = await _context.Auctions
+        //     .Include(x => x.Item)
+        //     .OrderBy(x => x.Item.Make)
+        //     .ToListAsync();
+        // var auctionDtos = _mapper.Map<List<AuctionDto>>(auctions);
+        // return auctionDtos;
     }
 
     [HttpGet("{id}")]

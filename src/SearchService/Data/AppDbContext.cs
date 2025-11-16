@@ -1,6 +1,4 @@
-using System;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.EntityFrameworkCore.Extensions;
 using SearchService.Models;
 
 namespace SearchService.Data;
@@ -18,8 +16,12 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        // Tạo text index trên Make, Model, Color
         modelBuilder.Entity<Item>()
-            .ToCollection("items");
+            .HasIndex(i => new { i.Make, i.Model, i.Color });
     }
+
 
 }
