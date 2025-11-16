@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 using SearchService.Data;
 using SearchService.Models;
 using Microsoft.EntityFrameworkCore;  // <--- bắt buộc
