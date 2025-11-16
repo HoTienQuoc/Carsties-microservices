@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using SearchService.Data;
 using SearchService.Models;
 using System.Text.Json;
@@ -12,8 +13,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-
+// Đọc connection string từ appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("MongoDb");
+
+// Đăng ký MongoClient để DI có thể inject vào controller
+builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(connectionString));
+
 var databaseName = builder.Configuration["DatabaseName"];
 
 if (string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(databaseName))
@@ -71,13 +76,6 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine("Dữ liệu đã tồn tại, không insert nữa.");
     }
 }
-
-
-
-
-
-
-
 
 
 // Configure the HTTP request pipeline.

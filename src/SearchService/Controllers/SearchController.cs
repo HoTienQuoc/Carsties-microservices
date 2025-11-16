@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using SearchService.Data;
 using SearchService.Models;
@@ -10,18 +11,20 @@ namespace SearchService.Controllers;
 public class SearchController : ControllerBase
 {
 
-    private readonly AppDbContext _context;
+    private readonly IMongoCollection<Item> _itemsCollection;
 
-    public SearchController(AppDbContext context)
+    public SearchController(IMongoClient client, IConfiguration config)
     {
-        _context = context;
+        var dbName = config["DatabaseName"];
+        var database = client.GetDatabase(dbName);
+        _itemsCollection = database.GetCollection<Item>("items");
+
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Item>>> SearchItems()
+    public async Task<ActionResult<List<Item>>> GetAllAsync()
     {
-        var items = await _context.Items.AsQueryable().ToListAsync(); // <-- bắt buộc AsQueryable()
-        Console.WriteLine(items.Count);
+        var items = await _itemsCollection.Find(_ => true).ToListAsync(); // async
         return Ok(items);
     }
 }
