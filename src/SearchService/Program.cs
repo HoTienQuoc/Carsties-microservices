@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using SearchService.Data;
-using SearchService.Models;
-using System.Text.Json;
 using SearchService.Services;
+
+
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +18,7 @@ builder.Services.AddControllers();
 var connectionString = builder.Configuration.GetConnectionString("MongoDb");
 
 // Đăng ký MongoClient để DI có thể inject vào controller
-builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(connectionString));
+
 builder.Services.AddHttpClient<AuctionSvcHttpClient>();
 
 var databaseName = builder.Configuration["DatabaseName"];
@@ -32,6 +32,32 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseMongoDB(connectionString, databaseName);
 });
+
+
+
+builder.Services.AddHttpClient<AuctionSvcHttpClient>()
+    .AddStandardResilienceHandler(options =>
+    {
+        // Retry configuration
+        options.Retry.MaxRetryAttempts = 6;
+        options.Retry.Delay = TimeSpan.FromSeconds(2); // fallback delay nếu DelayGenerator không được dùng
+        options.Retry.DelayGenerator = args =>
+            new ValueTask<TimeSpan?>(TimeSpan.FromSeconds(Math.Pow(2, args.AttemptNumber)));
+
+
+        // Circuit breaker
+        options.CircuitBreaker.FailureRatio = 0.5;
+        options.CircuitBreaker.MinimumThroughput = 8;
+        options.CircuitBreaker.BreakDuration = TimeSpan.FromSeconds(30);
+
+        // Attempt timeout (mỗi lần thử)
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+
+        // Total request timeout (bao gồm tất cả retry)
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
+    });
+
+
 
 
 
@@ -90,6 +116,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.Lifetime.ApplicationStarted.Register(async () =>
+{
+    try
+    {
+        await DbInitializer.InitDb(app);
+
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+    }
+});
 
 
 app.Run();
+
+
+

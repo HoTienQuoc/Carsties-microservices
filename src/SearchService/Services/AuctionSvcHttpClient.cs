@@ -31,12 +31,18 @@ public class AuctionSvcHttpClient
             .Select(x => x.UpdatedAt)
             .FirstOrDefaultAsync();
 
-        // Nếu chưa có item nào, gửi request từ đầu
-        var dateQuery = lastUpdated != default ? lastUpdated.ToString("o") : string.Empty;
+        // Nếu chưa có item nào, dùng ngày mặc định
+        var startDate = lastUpdated != default ? lastUpdated : new DateTime(2023, 1, 1);
+        var isoDate = startDate.ToUniversalTime().ToString("o"); // ISO 8601, UTC
 
-        var items = await _httpClient.GetFromJsonAsync<List<Item>>(
-            $"{_config["AuctionServiceUrl"]}/api/auctions?date={dateQuery}"
-        );
+        // Gọi Auction service với date hợp lệ
+        var url = $"{_config["AuctionServiceUrl"]}/api/auctions?date={Uri.EscapeDataString(isoDate)}";
+        var response = await _httpClient.GetAsync(url);
+
+        // Nếu lỗi HTTP, sẽ throw để Polly retry
+        response.EnsureSuccessStatusCode();
+
+        var items = await response.Content.ReadFromJsonAsync<List<Item>>();
 
         return items ?? new List<Item>();
     }
