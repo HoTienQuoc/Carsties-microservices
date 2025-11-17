@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 using SearchService.Data;
 using SearchService.Services;
+using MassTransit;
 
 
 
@@ -57,7 +57,17 @@ builder.Services.AddHttpClient<AuctionSvcHttpClient>()
         options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(60);
     });
 
+builder.Services.AddMassTransit(x =>
+{
+    // A Transport
+    x.UsingRabbitMq((
+        context,
+        cfg) =>
+    {
+        cfg.ConfigureEndpoints(context);
 
+    });
+});
 
 
 
