@@ -6,17 +6,11 @@ using SearchService.Models;
 using SearchService.Data;
 namespace SearchService.Consumers;
 
-public class AuctionCreatedConsumer : IConsumer<AuctionCreated>
+public class AuctionCreatedConsumer(IMapper mapper, AppDbContext context) : IConsumer<AuctionCreated>
 {
-    private readonly IMapper _mapper;
-    private readonly AppDbContext _context;
+    private readonly IMapper _mapper = mapper;
+    private readonly AppDbContext _context = context;
 
-
-    public AuctionCreatedConsumer(IMapper mapper, AppDbContext context)
-    {
-        this._mapper = mapper;
-        this._context = context;
-    }
     public async Task Consume(ConsumeContext<AuctionCreated> context)
     {
         Console.WriteLine("--> Consuming auction created: " + context.Message.Id);
