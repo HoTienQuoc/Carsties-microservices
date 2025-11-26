@@ -4,6 +4,8 @@ using AuctionService.DTOs;
 using AuctionService.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Contracts;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,11 +17,13 @@ public class AuctionController : ControllerBase
 {
     private readonly AuctionDbContext _context;
     private readonly IMapper _mapper;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public AuctionController(AuctionDbContext context, IMapper mapper)
+    public AuctionController(AuctionDbContext context, IMapper mapper, IPublishEndpoint publishEndpoint)
     {
         _context = context;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     [HttpGet]
@@ -74,10 +78,16 @@ public class AuctionController : ControllerBase
         //- Chưa gửi vào database — chỉ **track**.
         _context.Auctions.Add(auction);
 
+        var newAuction = _mapper.Map<AuctionDto>(auction);
+
+        await _publishEndpoint.Publish(_mapper.Map<AuctionCreated>(newAuction));
+
         //Lưu các thay đổi vào database.
         //SaveChangesAsync() trả về số bản ghi bị ảnh hưởng.
         //Nếu > 0 → lưu thành công (result = true).
         var result = await _context.SaveChangesAsync() > 0;
+
+
 
         //- Nếu lưu thất bại → trả về lỗi HTTP 400.
         if (!result)
@@ -102,7 +112,7 @@ public class AuctionController : ControllerBase
             //Đây là body trả về cho client.
             //Chuyển Entity → DTO để client không thấy dữ liệu nhạy cảm.
             //Trả về nội dung của Auction vừa tạo.
-            _mapper.Map<AuctionDto>(auction)
+            newAuction
         );
 
 

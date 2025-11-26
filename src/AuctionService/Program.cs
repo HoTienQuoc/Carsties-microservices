@@ -26,6 +26,12 @@ builder.Services.AddAutoMapper(cfg =>
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddEntityFrameworkOutbox<AuctionDbContext>(opt =>
+    {
+        opt.QueryDelay = TimeSpan.FromSeconds(1);
+        opt.UsePostgres();
+        opt.UseBusOutbox();
+    });
     // A Transport
     x.UsingRabbitMq((
         context,
