@@ -22,6 +22,10 @@ public class AuctionCreatedConsumer : IConsumer<AuctionCreated>
         Console.WriteLine("--> Consuming auction created: " + context.Message.Id);
         var item = _mapper.Map<Item>(context.Message);
         _context.Items.Add(item);          // Thêm vào DbSet
+        if (item.Model == "Foo")
+        {
+            throw new ArgumentNullException("Cannot sell cars with name of foo");
+        }
         await _context.SaveChangesAsync(); // Lưu xuống MongoDB
     }
 }
