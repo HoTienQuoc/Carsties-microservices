@@ -6,6 +6,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Contracts;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +64,7 @@ public class AuctionController : ControllerBase
         return auctionDto;
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<AuctionDto>> CreateAuction(CreateAuctionDto auctionDto)
     {
@@ -72,7 +74,7 @@ public class AuctionController : ControllerBase
         var auction = _mapper.Map<Auction>(auctionDto);
 
         // TODO: add current user as seller
-        auction.Seller = "test";
+        auction.Seller = User.Identity.Name;
 
         //- Thêm entity `auction` vào DbSet để EF Core theo dõi.
         //- Chưa gửi vào database — chỉ **track**.
@@ -118,6 +120,7 @@ public class AuctionController : ControllerBase
 
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAuction(Guid id, UpdateAuctionDto updateAuctionDto)
     {
@@ -131,6 +134,10 @@ public class AuctionController : ControllerBase
         }
 
         //Todo: check seller == username
+        if (auction.Seller != User.Identity.Name)
+        {
+            return Forbid();
+        }
         //🧠 Điểm quan trọng nhất: EF Core tracking
         //Khi bạn thay đổi giá trị:
         //EF Core sẽ ghi nhận:
@@ -155,6 +162,7 @@ public class AuctionController : ControllerBase
         return BadRequest("Problem saving changes");
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAuction(Guid id)
     {
@@ -166,6 +174,10 @@ public class AuctionController : ControllerBase
         }
 
         //Todo: check seller == username
+        if (auction.Seller != User.Identity.Name)
+        {
+            return Forbid();
+        }
         _context.Auctions.Remove(auction);
 
         await _publishEndpoint.Publish<AuctionDeleted>(new { Id = auction.Id.ToString() });

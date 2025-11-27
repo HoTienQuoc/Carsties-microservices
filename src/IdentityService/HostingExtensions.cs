@@ -76,7 +76,8 @@ internal static class HostingExtensions
             .AddInMemoryApiScopes(Config.ApiScopes)
             .AddInMemoryClients(Config.Clients)
             .AddAspNetIdentity<ApplicationUser>()
-            .AddLicenseSummary();
+            .AddLicenseSummary()
+            .AddProfileService<Services.CustomProfileService>();
 
         builder.Services.ConfigureApplicationCookie(options =>
         {
