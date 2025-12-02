@@ -36,7 +36,7 @@ public class SearchController : ControllerBase
             "finished" =>
                 query.Where(i => i.AuctionEnd < DateTime.UtcNow),
 
-            "endingsoon" =>
+            "endingSoon" =>
                 query.Where(i =>
                     i.AuctionEnd > DateTime.UtcNow &&
                     i.AuctionEnd < DateTime.UtcNow.AddHours(6)),
